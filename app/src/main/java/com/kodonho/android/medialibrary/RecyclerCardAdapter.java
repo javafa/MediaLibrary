@@ -1,10 +1,7 @@
 package com.kodonho.android.medialibrary;
 
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -16,8 +13,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 
 /**
@@ -47,7 +44,14 @@ public class RecyclerCardAdapter extends RecyclerView.Adapter<RecyclerCardAdapte
     public void onBindViewHolder(ViewHolder holder, final int position) {
         RecyclerData data = datas.get(position);
         //holder.img.setImageResource(data.image);
-        holder.img.setImageBitmap(getAlbumArtImage(context, Integer.parseInt(data.albumId)));
+        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+        Uri uri = ContentUris.withAppendedId(sArtworkUri, Long.valueOf(data.albumId));
+        Glide.with(context)
+                .load(uri)
+                //.bitmapTransform(new CropCircleTransformation(context))
+                .into(holder.img);
+        //holder.img.setImageBitmap(getAlbumArtImage(context, Integer.parseInt(data.albumId)));
+
         holder.textTitle.setText(data.title);
         holder.textArtist.setText(data.artist);
         holder.itemView.setTag(data);
@@ -67,46 +71,46 @@ public class RecyclerCardAdapter extends RecyclerView.Adapter<RecyclerCardAdapte
     }
 
     // 앨범이미지 가져오기
-    public static final Bitmap getAlbumArtImage(Context p_Context, long p_AlbumId){
-        Bitmap cover = null;
-        ByteArrayOutputStream w_OutBuf = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024 * 8];
-        int w_bFirst = 1;
-        int w_nZeroCount = 0;
-        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
-        Uri uri = ContentUris.withAppendedId(sArtworkUri, Long.valueOf(p_AlbumId));
-        ContentResolver res = p_Context.getContentResolver();
-        InputStream in;
-        try {
-            in = res.openInputStream(uri);
-            while(true) {
-                int count = in.read(buffer);
-                if(count == -1){
-                    break;
-                }
-                if(w_bFirst == 1){
-                    //. 맨 첫 바이트토막을 쓰는 경우 앞에 붙은 0값들은 제외한다.
-                    for(int i = 0; i < count; i++){
-                        if(buffer[i] == 0){
-                            w_nZeroCount++;
-                        }
-                        else{
-                            break;
-                        }
-                    }
-                    w_OutBuf.write(buffer, w_nZeroCount, count - w_nZeroCount);
-                    w_bFirst = 0;
-                }
-                else {
-                    w_OutBuf.write(buffer, 0, count);
-                }
-            }
-            cover = BitmapFactory.decodeByteArray(w_OutBuf.toByteArray(), 0, w_OutBuf.size());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return cover;
-    }
+//    public static final Bitmap getAlbumArtImage(Context p_Context, long p_AlbumId){
+//        Bitmap cover = null;
+//        ByteArrayOutputStream w_OutBuf = new ByteArrayOutputStream();
+//        byte[] buffer = new byte[1024 * 8];
+//        int w_bFirst = 1;
+//        int w_nZeroCount = 0;
+//        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+//        Uri uri = ContentUris.withAppendedId(sArtworkUri, Long.valueOf(p_AlbumId));
+//        ContentResolver res = p_Context.getContentResolver();
+//        InputStream in;
+//        try {
+//            in = res.openInputStream(uri);
+//            while(true) {
+//                int count = in.read(buffer);
+//                if(count == -1){
+//                    break;
+//                }
+//                if(w_bFirst == 1){
+//                    //. 맨 첫 바이트토막을 쓰는 경우 앞에 붙은 0값들은 제외한다.
+//                    for(int i = 0; i < count; i++){
+//                        if(buffer[i] == 0){
+//                            w_nZeroCount++;
+//                        }
+//                        else{
+//                            break;
+//                        }
+//                    }
+//                    w_OutBuf.write(buffer, w_nZeroCount, count - w_nZeroCount);
+//                    w_bFirst = 0;
+//                }
+//                else {
+//                    w_OutBuf.write(buffer, 0, count);
+//                }
+//            }
+//            cover = BitmapFactory.decodeByteArray(w_OutBuf.toByteArray(), 0, w_OutBuf.size());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return cover;
+//    }
 
     @Override
     public int getItemCount() {
